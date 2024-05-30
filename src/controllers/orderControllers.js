@@ -4,19 +4,18 @@ const Movie = require('../models/movie');
 exports.getOrders = async (req, res) => {
     try {
         const orders = await Order.find({ user_id: req.user._id })
-            .populate('user_id')
             .populate('movie_id')
             .lean();
 
         const populatedOrders = await Promise.all(orders.map(async order => {
             const movie = await Movie.findById(order.movie_id);
             if (!movie) {
-                throw new Error(`Movie ${order.movie_id} not found`);
+                throw new Error(`Movie not found`);
             }
 
             const showtime = movie.showtimes.id(order.showtime_id);
             if (!showtime) {
-                throw new Error(`Showtime ${order.showtime_id} not found`);
+                throw new Error(`Showtime not found`);
             }
 
             const seats = showtime.seats.filter(seat =>

@@ -1,46 +1,52 @@
 const mongoose = require("mongoose");
-const Movie = require('./movie');
-const User = require('./user');
+const mongooseSequence = require("mongoose-sequence")(mongoose);
 const Schema = mongoose.Schema;
-const ObjectId = Schema.ObjectId;
 
-const orderSchema = new mongoose.Schema({
-    _id: { type: ObjectId, required: true },
-    user_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    movie_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Movie',
-        required: true
-    },
-    showtime_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Movie.showtimes',
-        required: true
-    },
-    seats_booked: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Movie.showtimes.seats',
-        required: true
-    }],
-    total_amount: {
+const orderSchema = new Schema({
+    orderId: {
         type: Number,
         required: true
     },
-    payment_status: {
-        type: String,
-        enum: ['pending', 'paid', 'failed'],
-        default: 'pending'
+    userId: {
+        type: Number,
+        ref: "User",
+        required: true,
+        index: true
     },
-    created_at: {
+    movieId: {
+        type: Number,
+        ref: "Movie",
+        required: true,
+        index: true
+    },
+    showtimeId: {
+        type: Number,
+        ref: "Movie.showtimes",
+        required: true,
+        index: true
+    },
+    seatsBooked: [{
+        type: String,
+        required: true
+    }],
+    totalPrice: {
+        type: Number,
+        required: true
+    },
+    createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        index: true
+    },
+    paymentStatus: {
+        type: String,
+        enum: ["Pending", "Paid", "Canceled"],
+        default: "Pending"
     }
 });
 
-const Order = mongoose.model('Order', orderSchema);
+orderSchema.plugin(mongooseSequence, { inc_field: "orderId" });
+
+const Order = mongoose.model("Order", orderSchema);
 
 module.exports = Order;
